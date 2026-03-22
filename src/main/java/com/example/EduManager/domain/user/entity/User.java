@@ -4,11 +4,16 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users",
+        uniqueConstraints = @UniqueConstraint(name = "uq_users_school_school_number", columnNames = {"school", "school_number"}))
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
@@ -30,28 +35,45 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private School school;
+
+    @Column(name = "school_number", length = 20)
+    private String schoolNumber;
+
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
 
-    public static User of(String email, String password, String name, Role role) {
+    public static User of(String email, String password, String name, Role role, School school, String schoolNumber) {
         User user = new User();
         user.email = email;
         user.password = password;
         user.name = name;
         user.role = role;
-        user.createdAt = LocalDateTime.now();
-        user.updatedAt = LocalDateTime.now();
+        user.school = school;
+        user.schoolNumber = schoolNumber;
+        return user;
+    }
+
+    public static User ofParent(String email, String password, String name) {
+        User user = new User();
+        user.email = email;
+        user.password = password;
+        user.name = name;
+        user.role = Role.PARENT;
         return user;
     }
 
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void delete() {

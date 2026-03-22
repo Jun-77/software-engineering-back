@@ -6,12 +6,16 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "counselings")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Counseling {
@@ -42,9 +46,11 @@ public class Counseling {
     @Column(nullable = false)
     private boolean isSharedWithTeachers;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -57,8 +63,6 @@ public class Counseling {
         counseling.nextPlan = nextPlan;
         counseling.nextDate = nextDate;
         counseling.isSharedWithTeachers = false;
-        counseling.createdAt = LocalDateTime.now();
-        counseling.updatedAt = LocalDateTime.now();
         return counseling;
     }
 
@@ -66,11 +70,9 @@ public class Counseling {
         this.content = content;
         this.nextPlan = nextPlan;
         this.nextDate = nextDate;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void shareWithTeachers() {
         this.isSharedWithTeachers = true;
-        this.updatedAt = LocalDateTime.now();
     }
 }

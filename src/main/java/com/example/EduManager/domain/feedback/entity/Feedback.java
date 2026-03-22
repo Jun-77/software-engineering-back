@@ -6,11 +6,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "feedbacks")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Feedback {
@@ -37,9 +41,11 @@ public class Feedback {
     @Column(nullable = false)
     private boolean isShared;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -50,19 +56,15 @@ public class Feedback {
         feedback.category = category;
         feedback.content = content;
         feedback.isShared = false;
-        feedback.createdAt = LocalDateTime.now();
-        feedback.updatedAt = LocalDateTime.now();
         return feedback;
     }
 
     public void update(FeedbackCategory category, String content) {
         this.category = category;
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void share() {
         this.isShared = true;
-        this.updatedAt = LocalDateTime.now();
     }
 }

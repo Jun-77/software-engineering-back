@@ -21,18 +21,15 @@ public class StudentProfile {
     private User user;
 
     @Column(nullable = false)
-    private Byte grade;
+    private int grade;
 
     @Column(name = "class_num", nullable = false)
-    private Byte classNum;
+    private int classNum;
 
     @Column(nullable = false)
-    private Byte number;
+    private int number;
 
-    @Column(columnDefinition = "TEXT")
-    private String specialNotes;
-
-    public static StudentProfile of(User user, Byte grade, Byte classNum, Byte number) {
+    public static StudentProfile of(User user, int grade, int classNum, int number) {
         StudentProfile profile = new StudentProfile();
         profile.user = user;
         profile.grade = grade;
@@ -41,10 +38,9 @@ public class StudentProfile {
         return profile;
     }
 
-    public void update(Byte grade, Byte classNum, Byte number, String specialNotes) {
+    public void update(int grade, int classNum, int number) {
         this.grade = grade;
         this.classNum = classNum;
         this.number = number;
-        this.specialNotes = specialNotes;
     }
 }

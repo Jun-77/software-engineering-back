@@ -5,11 +5,14 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification {
@@ -41,6 +44,7 @@ public class Notification {
     @Column(length = 20)
     private ReferenceType referenceType;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -54,7 +58,6 @@ public class Notification {
         notification.isRead = false;
         notification.referenceId = referenceId;
         notification.referenceType = referenceType;
-        notification.createdAt = LocalDateTime.now();
         return notification;
     }
 

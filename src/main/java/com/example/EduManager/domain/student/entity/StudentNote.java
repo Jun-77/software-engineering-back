@@ -5,11 +5,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "student_notes")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudentNote {
@@ -29,9 +33,11 @@ public class StudentNote {
     @JoinColumn(name = "teacher_id", nullable = false)
     private User teacher;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -40,13 +46,10 @@ public class StudentNote {
         note.student = student;
         note.content = content;
         note.teacher = teacher;
-        note.createdAt = LocalDateTime.now();
-        note.updatedAt = LocalDateTime.now();
         return note;
     }
 
     public void update(String content) {
         this.content = content;
-        this.updatedAt = LocalDateTime.now();
     }
 }

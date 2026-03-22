@@ -6,12 +6,16 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "grades",
         uniqueConstraints = @UniqueConstraint(name = "uq_grades", columnNames = {"student_id", "semester", "subject", "exam_type"}))
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Grade {
@@ -27,8 +31,9 @@ public class Grade {
     @Column(nullable = false, length = 10)
     private String semester;
 
-    @Column(nullable = false, length = 50)
-    private String subject;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private Subject subject;
 
     @Column(nullable = false)
     private int score;
@@ -45,13 +50,15 @@ public class Grade {
     @JoinColumn(name = "teacher_id", nullable = false)
     private User teacher;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public static Grade of(StudentProfile student, String semester, String subject,
+    public static Grade of(StudentProfile student, String semester, Subject subject,
                            int score, ExamType examType, User teacher) {
         Grade grade = new Grade();
         grade.student = student;
@@ -61,14 +68,11 @@ public class Grade {
         grade.grade = GradeLevel.from(score);
         grade.examType = examType;
         grade.teacher = teacher;
-        grade.createdAt = LocalDateTime.now();
-        grade.updatedAt = LocalDateTime.now();
         return grade;
     }
 
     public void updateScore(int score) {
         this.score = score;
         this.grade = GradeLevel.from(score);
-        this.updatedAt = LocalDateTime.now();
     }
 }

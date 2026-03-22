@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "attendance",
         uniqueConstraints = @UniqueConstraint(name = "uq_attendance_student_date", columnNames = {"student_id", "date"}))
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Attendance {
@@ -39,6 +42,7 @@ public class Attendance {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -49,7 +53,6 @@ public class Attendance {
         attendance.status = status;
         attendance.note = note;
         attendance.createdBy = createdBy;
-        attendance.createdAt = LocalDateTime.now();
         return attendance;
     }
 
