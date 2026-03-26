@@ -88,6 +88,10 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 
+    public long getRefreshTokenExpiry() {
+        return this.refreshTokenExpiry;
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
