@@ -1,6 +1,6 @@
 package com.example.EduManager.domain.user.service;
 
-import com.example.EduManager.domain.auth.dto.RegisterRequest;
+import com.example.EduManager.domain.user.entity.Role;
 import com.example.EduManager.domain.user.entity.School;
 import com.example.EduManager.domain.user.entity.User;
 import com.example.EduManager.domain.user.repository.UserRepository;
@@ -17,19 +17,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+    public User registerSchoolUser(String email, String rawPassword, String name, Role role, School school, String schoolNumber) {
+        if (userRepository.existsByEmail(email)) {
             throw new CustomException(ErrorCode.DUPLICATED_USER);
         }
-        User user = User.of(
-                request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getName(),
-                request.getRole(),
-                request.getSchool(),
-                request.getSchoolNumber()
-        );
-        return userRepository.save(user);
+        return userRepository.save(User.of(email, passwordEncoder.encode(rawPassword), name, role, school, schoolNumber));
+    }
+
+    public User registerParentUser(String email, String rawPassword, String name) {
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.DUPLICATED_USER);
+        }
+        return userRepository.save(User.ofParent(email, passwordEncoder.encode(rawPassword), name));
     }
 
     public User getById(Long userId) {
@@ -45,5 +44,10 @@ public class UserService {
     public User getBySchoolAndSchoolNumber(School school, String schoolNumber) {
         return userRepository.findBySchoolAndSchoolNumber(school, schoolNumber)
                 .orElseThrow(() -> new CustomException(ErrorCode.BAD_CREDENTIALS));
+    }
+
+    public User getStudentBySchoolAndSchoolNumber(School school, String schoolNumber) {
+        return userRepository.findBySchoolAndSchoolNumber(school, schoolNumber)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 }

@@ -21,9 +21,19 @@ public class AuthController implements AuthApiSpecification {
 
     private final AuthFacade authFacade;
 
-    @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authFacade.register(request));
+    @PostMapping("/register/teacher")
+    public ResponseEntity<UserResponse> registerTeacher(@Valid @RequestBody TeacherRegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authFacade.registerTeacher(request));
+    }
+
+    @PostMapping("/register/student")
+    public ResponseEntity<UserResponse> registerStudent(@Valid @RequestBody StudentRegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authFacade.registerStudent(request));
+    }
+
+    @PostMapping("/register/parent")
+    public ResponseEntity<UserResponse> registerParent(@Valid @RequestBody ParentRegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authFacade.registerParent(request));
     }
 
     @PostMapping("/login/school")

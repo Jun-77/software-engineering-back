@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface AuthApiSpecification {
 
     @SecurityRequirements(value = {})
-    @Operation(summary = "회원가입")
+    @Operation(summary = "교사 회원가입", description = "담임 학년/반 정보를 포함해 교사 계정을 생성합니다.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201", description = "회원가입 성공",
@@ -42,29 +42,16 @@ public interface AuthApiSpecification {
                     responseCode = "400", description = "입력값 오류",
                     content = @Content(
                             schema = @Schema(implementation = ErrorResponse.class),
-                            examples = {
-                                    @ExampleObject(name = "이메일 형식 오류", value = """
-                                            {
-                                                "code": 400,
-                                                "name": "INVALID_INPUT_VALUE",
-                                                "message": "잘못된 입력입니다.",
-                                                "errors": {
-                                                    "email": "올바른 이메일 형식이 아닙니다."
-                                                }
-                                            }
-                                            """),
-                                    @ExampleObject(name = "필수 필드 누락", value = """
-                                            {
-                                                "code": 400,
-                                                "name": "INVALID_INPUT_VALUE",
-                                                "message": "잘못된 입력입니다.",
-                                                "errors": {
-                                                    "name": "이름을 입력해주세요.",
-                                                    "role": "역할을 선택해주세요."
-                                                }
-                                            }
-                                            """)
-                            }
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 400,
+                                        "name": "INVALID_INPUT_VALUE",
+                                        "message": "잘못된 입력입니다.",
+                                        "errors": {
+                                            "grade": "학년을 입력해주세요."
+                                        }
+                                    }
+                                    """)
                     )
             ),
             @ApiResponse(
@@ -81,7 +68,118 @@ public interface AuthApiSpecification {
                     )
             )
     })
-    ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request);
+    ResponseEntity<UserResponse> registerTeacher(@Valid @RequestBody TeacherRegisterRequest request);
+
+    @SecurityRequirements(value = {})
+    @Operation(summary = "학생 회원가입", description = "학년/반/번호 정보를 포함해 학생 계정을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201", description = "회원가입 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = UserResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "id": 2,
+                                        "email": "student@school.com",
+                                        "name": "이학생",
+                                        "role": "STUDENT"
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "입력값 오류",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 400,
+                                        "name": "INVALID_INPUT_VALUE",
+                                        "message": "잘못된 입력입니다.",
+                                        "errors": {
+                                            "number": "번호를 입력해주세요."
+                                        }
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409", description = "이메일 중복",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 409,
+                                        "name": "DUPLICATED_USER",
+                                        "message": "이미 존재하는 유저입니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    ResponseEntity<UserResponse> registerStudent(@Valid @RequestBody StudentRegisterRequest request);
+
+    @SecurityRequirements(value = {})
+    @Operation(summary = "학부모 회원가입", description = "자녀의 학교와 학번으로 자녀를 확인하고 연결합니다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201", description = "회원가입 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = UserResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "id": 3,
+                                        "email": "parent@email.com",
+                                        "name": "박학부모",
+                                        "role": "PARENT"
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "입력값 오류",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 400,
+                                        "name": "INVALID_INPUT_VALUE",
+                                        "message": "잘못된 입력입니다.",
+                                        "errors": {
+                                            "childSchoolNumber": "자녀의 학번을 입력해주세요."
+                                        }
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404", description = "자녀 학생을 찾을 수 없음",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 404,
+                                        "name": "USER_NOT_FOUND",
+                                        "message": "해당 유저를 찾을 수 없습니다."
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409", description = "이메일 중복",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject("""
+                                    {
+                                        "code": 409,
+                                        "name": "DUPLICATED_USER",
+                                        "message": "이미 존재하는 유저입니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    ResponseEntity<UserResponse> registerParent(@Valid @RequestBody ParentRegisterRequest request);
 
     @SecurityRequirements(value = {})
     @Operation(summary = "교사·학생 로그인", description = "학교 + 사번/학번으로 로그인합니다. Refresh Token은 HttpOnly 쿠키(refreshToken)로 발급됩니다.")
@@ -98,22 +196,6 @@ public interface AuthApiSpecification {
                                             "email": "teacher@school.com",
                                             "name": "김교사",
                                             "role": "TEACHER"
-                                        }
-                                    }
-                                    """)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400", description = "입력값 오류",
-                    content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject("""
-                                    {
-                                        "code": 400,
-                                        "name": "INVALID_INPUT_VALUE",
-                                        "message": "잘못된 입력입니다.",
-                                        "errors": {
-                                            "schoolNumber": "학번/사번을 입력해주세요."
                                         }
                                     }
                                     """)
@@ -162,24 +244,8 @@ public interface AuthApiSpecification {
                                         "user": {
                                             "id": 3,
                                             "email": "parent@email.com",
-                                            "name": "이학부모",
+                                            "name": "박학부모",
                                             "role": "PARENT"
-                                        }
-                                    }
-                                    """)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400", description = "입력값 오류",
-                    content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class),
-                            examples = @ExampleObject("""
-                                    {
-                                        "code": 400,
-                                        "name": "INVALID_INPUT_VALUE",
-                                        "message": "잘못된 입력입니다.",
-                                        "errors": {
-                                            "email": "올바른 이메일 형식이 아닙니다."
                                         }
                                     }
                                     """)
