@@ -5,16 +5,10 @@ import com.example.EduManager.domain.auth.service.AuthService;
 import com.example.EduManager.domain.student.entity.StudentProfile;
 import com.example.EduManager.domain.student.service.StudentService;
 import com.example.EduManager.domain.teacher.service.TeacherService;
-import com.example.EduManager.domain.user.entity.RefreshToken;
 import com.example.EduManager.domain.user.entity.Role;
 import com.example.EduManager.domain.user.entity.User;
 import com.example.EduManager.domain.user.service.UserService;
-import com.example.EduManager.global.exception.CustomException;
-import com.example.EduManager.global.exception.ErrorCode;
-import com.example.EduManager.global.security.JwtTokenProvider;
-import com.example.EduManager.global.security.exception.JwtAuthException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +20,6 @@ public class AuthFacade {
     private final StudentService studentService;
     private final TeacherService teacherService;
     private final AuthService authService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserResponse registerTeacher(TeacherRegisterRequest request) {
@@ -61,56 +53,23 @@ public class AuthFacade {
     @Transactional
     public LoginResult loginBySchool(SchoolLoginRequest request) {
         User user = userService.getBySchoolAndSchoolNumber(request.getSchool(), request.getSchoolNumber());
-        validateLogin(user, request.getPassword());
-        return issueTokens(user);
+        return authService.authenticate(user, request.getPassword());
     }
 
     @Transactional
     public LoginResult loginByEmail(EmailLoginRequest request) {
         User user = userService.getByEmail(request.getEmail());
-        validateLogin(user, request.getPassword());
-        return issueTokens(user);
+        return authService.authenticate(user, request.getPassword());
     }
 
     @Transactional
     public RefreshResult refresh(String refreshToken) {
-        RefreshToken token = authService.getByToken(refreshToken);
-
-        if (token.isExpired()) {
-            authService.deleteRefreshToken(token.getUser());
-            throw new JwtAuthException(ErrorCode.JWT_REFRESH_TOKEN_EXPIRED);
-        }
-
-        User user = token.getUser();
-        authService.deleteRefreshToken(user);
-
-        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId());
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-        authService.saveRefreshToken(user, newRefreshToken, jwtTokenProvider.getRefreshTokenExpiry());
-
-        return RefreshResult.of(newAccessToken, newRefreshToken);
+        return authService.refresh(refreshToken);
     }
 
     @Transactional
     public void logout(Long userId) {
         User user = userService.getById(userId);
-        authService.deleteRefreshToken(user);
-    }
-
-    private void validateLogin(User user, String rawPassword) {
-        if (user.isDeleted()) {
-            throw new CustomException(ErrorCode.USER_DELETED);
-        }
-        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new CustomException(ErrorCode.BAD_CREDENTIALS);
-        }
-    }
-
-    private LoginResult issueTokens(User user) {
-        authService.deleteRefreshToken(user);
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
-        authService.saveRefreshToken(user, refreshToken, jwtTokenProvider.getRefreshTokenExpiry());
-        return LoginResult.of(user, accessToken, refreshToken);
+        authService.logout(user);
     }
 }
