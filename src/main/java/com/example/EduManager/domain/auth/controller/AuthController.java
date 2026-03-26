@@ -3,6 +3,7 @@ package com.example.EduManager.domain.auth.controller;
 import com.example.EduManager.domain.auth.AuthFacade;
 import com.example.EduManager.domain.auth.dto.*;
 import com.example.EduManager.global.security.UserDetailsImpl;
+import com.example.EduManager.global.swagger.AuthApiSpecification;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthApiSpecification {
 
     private final AuthFacade authFacade;
 
